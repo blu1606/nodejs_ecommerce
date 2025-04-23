@@ -10,11 +10,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "compression": "^1.8.0",
+    "crypto": "^1.0.1",
     "express": "^5.1.0",
     "mongoose": "^8.13.2"
   },
   "devDependencies": {
+    "dotenv": "^16.5.0",
     "helmet": "^8.1.0",
     "morgan": "^1.10.0"
   }
