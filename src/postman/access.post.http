@@ -2,9 +2,10 @@
 @url_dev =http://localhost:3052/v1/api
 POST {{url_dev}}/shop/signup
 Content-Type: application/json
+x-api-key: 8e932132768802c8419c246f7f4eb05055f2997b7676628da0cbecec0104eb1475ad179e9cc31c4aaa106f9c4628c483310de37843b917381983a2f0719f6128
 
 {
-    "name" : "Shopdev",
-    "email": "test9@gmail.com",
+    "name" : "Shopdev1",
+    "email": "test13@gmail.com",
     "password": "abc"
 }
