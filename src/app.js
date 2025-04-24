@@ -1,25 +1,34 @@
-require('dotenv').config()
-const compression = require('compression')
 const express = require('express')
+const morgan = require('morgan') 
 const {default: helmet} = require('helmet')
-const morgan = require('morgan')
+require('dotenv').config() // to get access to file env
+const compression = require('compression')
 const app = express()
 
+// init middlewares
+app.use(morgan('dev')) // to store log 
+// app.use(helmet()) // for more protection 
+app.use(compression()) // for more space optimization
+app.use(express.json())
+app.use(express.urlencoded({
+    extended: true
+}))
+app.use(express.json())
+app.use(express.urlencoded({
+    extended: true
+}))
 
-// init middlewares 
-app.use(morgan("dev"))
-app.use(helmet())
-app.use(compression())
-
-// init db 
+// init db
 require('./dbs/init.mongodb')
-// const { countConenct, checkOverload } = require('./helpers/check.connect')
+
+// init routes
+app.use('/', require('./routes'))
+
+
+// handling error
+
+// check overload uncomment if wanna check 
+// const { checkOverload } = require('./helpers/check.connect')
 // checkOverload()
-
-// init routes 
-app.use('', require('./routes'))
-
-// handling errors 
-
 
 module.exports = app

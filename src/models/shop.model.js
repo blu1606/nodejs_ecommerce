@@ -23,7 +23,7 @@ var shopSchema = new Schema({
         required:true,
     },
     status: {
-        types: String,
+        type: String,
         enum: ['active', 'inactive'],
         default: 'inactive'
     },
