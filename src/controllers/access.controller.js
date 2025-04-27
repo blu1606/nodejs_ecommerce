@@ -6,6 +6,13 @@ const keytokenModel = require('../models/keytoken.model') // Assuming this is th
 
 class AccessController {
 
+    handlerRefreshToken = async (req, res, next) => {
+        new SuccessResponse({
+            message: 'Get token success',
+            metadata: await AccessService.handlerRefreshToken( req.body.refreshToken )
+        }).send(res)
+    }
+
     logout = async (req, res, next) => {
         const delKey = await keytokenModel.deleteOne({ _id: req.keyStore._id })
         console.log({delKey})

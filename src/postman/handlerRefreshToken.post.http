@@ -1,0 +1,10 @@
+@url_dev =http://localhost:3052/v1/api
+POST {{url_dev}}/shop/handlerRefreshToken
+Content-Type: application/json
+x-api-key: 8e932132768802c8419c246f7f4eb05055f2997b7676628da0cbecec0104eb1475ad179e9cc31c4aaa106f9c4628c483310de37843b917381983a2f0719f6128
+x-client-id: 680e0ac24987c6c686f99a34
+authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODBlMGFjMjQ5ODdjNmM2ODZmOTlhMzQiLCJlbWFpbCI6InRlc3QxOEBnbWFpbC5jb20iLCJpYXQiOjE3NDU3NjIyNjcsImV4cCI6MTc0NTkzNTA2N30.gIQot_nQKh9rEZlyVfD41bL38kkCjU9IeKvGt04YuqU
+
+{
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODBlMGFjMjQ5ODdjNmM2ODZmOTlhMzQiLCJlbWFpbCI6InRlc3QxOEBnbWFpbC5jb20iLCJpYXQiOjE3NDU3NjIyNjcsImV4cCI6MTc0NjM2NzA2N30.MmFZn-lJBXAndZflSMNvvVEALis0BkyHN3Nf1cCe5mQ"
+}
