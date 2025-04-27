@@ -38,7 +38,9 @@ class CREATED extends SuccessResponse {
     }
 }
 
+
 module.exports = {
     OK,
-    CREATED
+    CREATED,
+    SuccessResponse
 }
