@@ -1,0 +1,11 @@
+@url_dev =http://localhost:3052/v1/api
+POST {{url_dev}}/shop/logout
+Content-Type: application/json
+x-api-key: 8e932132768802c8419c246f7f4eb05055f2997b7676628da0cbecec0104eb1475ad179e9cc31c4aaa106f9c4628c483310de37843b917381983a2f0719f6128
+x-client-id: 680e0ac24987c6c686f99a34
+authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODBlMGFjMjQ5ODdjNmM2ODZmOTlhMzQiLCJlbWFpbCI6InRlc3QxOEBnbWFpbC5jb20iLCJpYXQiOjE3NDU3NTEwMTIsImV4cCI6MTc0NTkyMzgxMn0.cz0q7rbw6Jt1BHHCJS1BYElsVag4063J4GGdaVyyHnA
+
+{
+    "email": "test18@gmail.com",
+    "password": "abc"
+}
