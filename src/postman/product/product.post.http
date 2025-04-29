@@ -3,19 +3,19 @@ POST {{url_dev}}/product
 Content-Type: application/json
 x-api-key: 8e932132768802c8419c246f7f4eb05055f2997b7676628da0cbecec0104eb1475ad179e9cc31c4aaa106f9c4628c483310de37843b917381983a2f0719f6128
 x-client-id: 680e0ac24987c6c686f99a34
-authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODBlMGFjMjQ5ODdjNmM2ODZmOTlhMzQiLCJlbWFpbCI6InRlc3QxOEBnbWFpbC5jb20iLCJpYXQiOjE3NDU5MDE3NTcsImV4cCI6MTc0NjA3NDU1N30.smI758r7Rx3miKSfmqLZNUTpenLeA7-4kkbUJZ33W9M
-x-rtoken-id: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODBlMGFjMjQ5ODdjNmM2ODZmOTlhMzQiLCJlbWFpbCI6InRlc3QxOEBnbWFpbC5jb20iLCJpYXQiOjE3NDU5MDIwMzMsImV4cCI6MTc0NjUwNjgzM30.ytkG9fFeNQvZ-qOwOkRoWAum1Vgo1dRHd4H4p8Vmtyg
+authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODBlMGFjMjQ5ODdjNmM2ODZmOTlhMzQiLCJlbWFpbCI6InRlc3QxOEBnbWFpbC5jb20iLCJpYXQiOjE3NDU5MDM1MzksImV4cCI6MTc0NjA3NjMzOX0.srgWr1stnfiZYMuNCWcuuzMpfgFoPTsU03y0o2Nuat8
+x-rtoken-id: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODBlMGFjMjQ5ODdjNmM2ODZmOTlhMzQiLCJlbWFpbCI6InRlc3QxOEBnbWFpbC5jb20iLCJpYXQiOjE3NDU5MDM1MzksImV4cCI6MTc0NjUwODMzOX0.GNq6_TefkTaMvfvx2jRtikfRM8_En5rFSv_P3Igns9E
 
 {
-    "product_name": "Iphone 14 64GB",
+    "product_name": "Furniture 15 64GB",
     "product_thumb": "New product",
     "product_description": "High-quality denim jeans",
     "product_price": 500,
     "product_quantity": 5,
-    "product_type": "Electronics",
+    "product_type": "Furniture",
     "product_attributes": {
-        "manufacturer": "Apple",
-        "model": "iPhone14",
-        "color": "Gold"
+        "brand": "TTF",
+        "size": "15",
+        "material": "GOLD"
     }
-}
+} 

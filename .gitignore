@@ -4,3 +4,4 @@ logout.post.http
 access.post.http
 handlerRefreshToken.post.http
 logout.post.http
+product.post.http
