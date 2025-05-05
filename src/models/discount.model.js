@@ -14,7 +14,7 @@ var discountSchema = new Schema({
     discount_code: { type: String, required: true, }, // discount code
     discount_start_date: { type: Date, required: true,},
     discount_end_date: { type: Date, required: true, },
-    discount_maximum_uses: { type: Number, required: true, }, // 0: unlimited
+    discount_max_uses: { type: Number, required: true, }, // 0: unlimited
     discount_uses_count: { type: Number, required: true, }, // maximum discount per user
     discount_users_used: { type: Array, default: [], }, // userId that used the discount code
     discount_max_uses_per_user: { type: Number, required: true, }, // maximum discount per user
@@ -23,7 +23,7 @@ var discountSchema = new Schema({
     discount_is_active: { type: Boolean, default: true, }, // is active discount code
     discount_applies_to: { type: String, required: true, enum: ['all', 'specific'] ,default: 'all', }, // all, category, product
     discount_product_ids: { type: Array, default: [], }, // productId that discount code applies to
-    
+
 }, {
     collection: COLLECTION_NAME,
     timestamps: true
