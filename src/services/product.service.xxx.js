@@ -4,6 +4,7 @@ const { product, clothing, electronic, furniture } = require("../models/product.
 const { BadRequestError, ForbiddenError} = require('../core/error.response')
 const { findAllDraftsForShop, publishProductByShop, findAllPublishForShop, unPublishProductByShop, searchProductByUser, findAllProducts, findProduct, updateProductById } = require('../models/repository/product.repo')
 const { removeUndefinedObject, updateNestedObjectParser } = require("../utils")
+const { insertInventory } = require('../models/repository/inventory.repo')
 // define Factory class to create product
 class ProductFactory {
     /*
@@ -84,7 +85,16 @@ class Product {
 
     // create new product
     async createProduct(product_id) {
-        return await product.create({...this, _id: product_id})
+        const newProduct =  await product.create({...this, _id: product_id})
+        if (newProduct) {
+            // add product_stock in inventory collection
+            await insertInventory({
+                productId: newProduct._id,
+                shopId: this.product_shop,
+                stock: this.product_quantity
+            })
+        }
+        return newProduct; // Add this line to return the created product
     }
 
     // update Product
