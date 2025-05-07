@@ -21,7 +21,7 @@ var discountSchema = new Schema({
     discount_min_order_value: { type: Number, required: true, default: 0, }, // minimum order value to apply discount
     discount_shopId: { type: Types.ObjectId, ref: 'Shop', required: true, }, // shopId that created the discount code
     discount_is_active: { type: Boolean, default: true, }, // is active discount code
-    discount_applies_to: { type: String, required: true, enum: ['all', 'specific'] ,default: 'all', }, // all, category, product
+    discount_applies_to: { type: String, required: true, enum: ['all', 'specific']}, // all, category, product
     discount_product_ids: { type: Array, default: [], }, // productId that discount code applies to
 
 }, {

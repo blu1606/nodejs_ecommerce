@@ -1,13 +1,14 @@
 'use strict'
 
-const { discount } = require('../../models/discount.model')
+const discountModel = require('../../models/discount.model') // Changed import
 const { convertToObjectIdMongodb, getSelectData, unGetSelectData} = require('../../utils')
 
 const findDiscount = async ({ discount_code, discount_shopId}) => {
-    return await discount.findOne({
+    return await discountModel.findOne({ // Changed to use discountModel
         discount_code,
         discount_shopId: convertToObjectIdMongodb(discount_shopId)
     }).lean()
+
 }
 
 const findAllDiscountCodesSelect = async({

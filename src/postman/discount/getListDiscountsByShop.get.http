@@ -1,19 +1,7 @@
 @url_dev =http://localhost:3052/v1/api
-PATCH  {{url_dev}}/product/6810722b64669f6c2c07b368
+GET {{url_dev}}/discount?shopId=680e0ac24987c6c686f99a34&limit=50&page=1
 Content-Type: application/json
 x-api-key: 8e932132768802c8419c246f7f4eb05055f2997b7676628da0cbecec0104eb1475ad179e9cc31c4aaa106f9c4628c483310de37843b917381983a2f0719f6128
 x-client-id: 680e0ac24987c6c686f99a34
 authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODBlMGFjMjQ5ODdjNmM2ODZmOTlhMzQiLCJlbWFpbCI6InRlc3QxOEBnbWFpbC5jb20iLCJpYXQiOjE3NDY2MDA3NDksImV4cCI6MTc0Njc3MzU0OX0.kM9JTL64AR9CFy5vvCRCWDMb-cnsxqRlxoPH9hAkQYE
 x-rtoken-id: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODBlMGFjMjQ5ODdjNmM2ODZmOTlhMzQiLCJlbWFpbCI6InRlc3QxOEBnbWFpbC5jb20iLCJpYXQiOjE3NDY2MDA3NDksImV4cCI6MTc0NzIwNTU0OX0.vyWmSMH-J-Y9HaQg3KbZKYHhgXfwX-tW4dzjgj0eBgc
-
-{
-    "product_name": "Băng quấn bảo vệ Khuỷu Tay co giãn tốt 1 tiện dụng khi chơi thể thao cho nam",
-    "product_attributes": {
-        "brand": "MRM Vietnam 001",
-        "size": "XL",
-        "material": "thun"
-    },
-    "product_type": "Clothing",
-    "product_price": 1235
-
-}
