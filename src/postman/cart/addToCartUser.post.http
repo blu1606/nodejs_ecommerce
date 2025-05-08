@@ -1,0 +1,49 @@
+@url_dev =http://localhost:3052/v1/api
+POST {{url_dev}}/cart
+Content-Type: application/json
+x-api-key: 8e932132768802c8419c246f7f4eb05055f2997b7676628da0cbecec0104eb1475ad179e9cc31c4aaa106f9c4628c483310de37843b917381983a2f0719f6128
+
+{
+    "userId": 1001,
+    "product": {
+        "productId": "6818dae077802309ee1c1dc1",
+        "shopId": "680e0ac24987c6c686f99a34",
+        "quantity": 4
+    }
+}
+
+
+# {
+#   "message": "findAllProducts success!!",
+#   "status": 200,
+#   "metadata": [
+#     {
+#       "_id": "6818dae077802309ee1c1dc1",
+#       "product_name": "ao thun polo 123",
+#       "product_thumb": "New product",
+#       "product_price": 129000,
+#       "product_shop": "680e0ac24987c6c686f99a34"
+#     },
+#     {
+#       "_id": "6818da9877802309ee1c1db9",
+#       "product_name": "ao thun polo 009999",
+#       "product_thumb": "New product",
+#       "product_price": 129000,
+#       "product_shop": "680e0ac24987c6c686f99a34"
+#     },
+#     {
+#       "_id": "681082842cad186a84aed365",
+#       "product_name": "Ao bang quan viet nam",
+#       "product_thumb": "New product",
+#       "product_price": 1234,
+#       "product_shop": "680e0ac24987c6c686f99a34"
+#     },
+#     {
+#       "_id": "6810722b64669f6c2c07b368",
+#       "product_name": "Băng quấn bảo vệ Khuỷu Tay co giãn tốt 1 tiện dụng khi chơi thể thao cho nam",
+#       "product_thumb": "New product",
+#       "product_price": 1235,
+#       "product_shop": "680e0ac24987c6c686f99a34"
+#     }
+#   ]
+# }

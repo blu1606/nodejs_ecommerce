@@ -21,18 +21,16 @@ var cartSchema = new Schema({
         ]    
     */
    cart_count_product: { type: Number, default: 0},
-   cart_userID: { type: Number, required: true},
+   cart_userId: { type: Number, required: true},
 
 
 }, {
     collection: COLLECTION_NAME,
-    timeseries: {
+    timestamps: {
         createdAt: 'createdOn',
         updatedAt: 'modifiedOn'
     }
 });
 
 //Export the model
-module.exports = {
-    cart: model(DOCUMENT_NAME, cartSchema)
-}
+module.exports = model(DOCUMENT_NAME, cartSchema)
