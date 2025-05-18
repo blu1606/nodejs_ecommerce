@@ -4,11 +4,11 @@ Content-Type: application/json
 x-api-key: 8e932132768802c8419c246f7f4eb05055f2997b7676628da0cbecec0104eb1475ad179e9cc31c4aaa106f9c4628c483310de37843b917381983a2f0719f6128
 
 {
-    "codeId": "SHOP-1125",
+    "codeId": "SHOP-1126",
     "userId": "681b0755ec640db975e60072",
-    "shopId": "680e0ac24987c6c686f99a34",
+    "shopId": "682974145c0220da9fda9502",
     "products": [{
-        "productId": "6818dae077802309ee1c1dc1",
+        "productId": "682975255c0220da9fda952a",
         "quantity": 5,
         "price": 120000
     }]

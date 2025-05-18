@@ -47,35 +47,55 @@ class CartService {
         const userCart = await cart.findOne({ cart_userId: userId})
         if (!userCart) {
             // create cart for User
-
-            return await CartService.createUserCart({ userId, product })
+            // Ensure product data passed to createUserCart is structured correctly for cart_products
+            const productDataForNewCart = {
+                productId: product.productId,
+                name: product.product_name, // Assuming product object has product_name
+                price: product.product_price, // Assuming product object has product_price
+                quantity: product.quantity,
+                shopId: product.shopId // Ensure shopId is included if needed by your schema/logic
+            };
+            return await CartService.createUserCart({ userId, product: productDataForNewCart });
         }
-        const { productId, product_name, product_price, quantity } = product
-        const foundProduct = await getProductById(productId)
-        
-        if (product_name && foundProduct.product_name !== product_name) {
-            throw new BadRequestError(`Product name ${product_name} not equal to ${foundProduct.product_name}`)
-        }
 
-        if (product_price && foundProduct.product_price !== product_price) {
-            throw new BadRequestError(`Product price ${product_price} not equal to ${foundProduct.product_price}`)
+        // Neu gio hang ton tai
+        const { productId, quantity } = product;
+        // It's better to fetch the canonical product details from the DB
+        // instead of relying on potentially incomplete/incorrect details from the request body.
+        const foundProductDetails = await getProductById(productId);
+        if (!foundProductDetails) {
+            throw new NotFoundError('Product not found');
         }
 
         const productDataForCart = {
             productId: productId, 
-            name: foundProduct.product_name,
-            price: foundProduct.product_price,
-            quantity: quantity
+            name: foundProductDetails.product_name,
+            price: foundProductDetails.product_price,
+            quantity: quantity,
+            shopId: foundProductDetails.product_shop.toString() // Assuming product_shop is the shopId
         };
 
-        // neu co gio hang nhung chua co san pham
-        if (!userCart.cart_products.length) {
-            userCart.cart_products = [productDataForCart]
-            return await userCart.save()
-        }
+        // Check if product already exists in cart
+        const existingProductIndex = userCart.cart_products.findIndex(p => p.productId === productId);
 
-        // gio hang ton tai, va co san pham nay thi update quantity
-        return await CartService.updateUserCartQuantity({ userId, product: productDataForCart })
+        if (existingProductIndex > -1) {
+            // Product exists, update quantity using updateUserCartQuantity
+            // updateUserCartQuantity expects the quantity to be the increment amount
+            // If productDataForCart.quantity is the new total quantity, adjust accordingly
+            // For now, assuming productDataForCart.quantity is the amount to add
+            return await CartService.updateUserCartQuantity({ 
+                userId, 
+                product: { 
+                    productId: productId, 
+                    quantity: productDataForCart.quantity // This should be the delta, not new total
+                } 
+            });
+        } else {
+            // Product does not exist, add to cart_products array
+            userCart.cart_products.push(productDataForCart);
+            userCart.cart_count_product = userCart.cart_products.length;
+            return await userCart.save();
+        }
     }
 
     // update

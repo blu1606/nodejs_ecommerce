@@ -6,3 +6,4 @@ handlerRefreshToken.post.http
 logout.post.http
 product.post.http
 drafts.all.get.http
+postman
