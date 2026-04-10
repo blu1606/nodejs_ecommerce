@@ -4,7 +4,7 @@ const {model, Schema} = require('mongoose'); // Erase if already required
 const slugify = require('slugify')
 
 const DOCUMENT_NAME = 'Product'
-const COllECTION_NAME = 'Products'
+const COLLECTION_NAME = 'Products'
 
 // Declare the Schema of the Mongo model
 var productSchema = new Schema({
@@ -25,11 +25,11 @@ var productSchema = new Schema({
         max: [5, 'Rating must be below 5.0'],
         set: (val) => Math.round(val*10)/10
     }, 
-    product_variations: { type: Array, deault: []},
+    product_variations: { type: Array, default: []},
     isDraft: { type: Boolean, default: true, index: true, select: false},
     isPublished: { type: Boolean, default: false, index: true, select: false},
 }, {
-    collection: COllECTION_NAME,
+    collection: COLLECTION_NAME,
     timestamps: true
 })
 // create index for search

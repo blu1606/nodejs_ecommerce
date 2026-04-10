@@ -6,7 +6,7 @@ const app = express()
 
 // init middlewares
 app.use(morgan('dev')) // to store log 
-// app.use(helmet()) // for more protection 
+app.use(helmet()) // for more protection 
 app.use(compression()) // for more space optimization
 app.use(express.json())
 app.use(express.urlencoded({

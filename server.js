@@ -1,5 +1,6 @@
 require('dotenv').config()
 const app = require("./src/app");
+const instanceMongodb = require('./src/dbs/init.mongodb')
 
 const PORT = process.env.PORT || 3055
 

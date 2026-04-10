@@ -14,6 +14,7 @@ var discountSchema = new Schema({
     discount_code: { type: String, required: true, }, // discount code
     discount_start_date: { type: Date, required: true,},
     discount_end_date: { type: Date, required: true, },
+    discount_max_value: { type: Number, required: true, }, // maximum discount value
     discount_max_uses: { type: Number, required: true, }, // 0: unlimited
     discount_uses_count: { type: Number, required: true, }, // maximum discount per user
     discount_users_used: { type: Array, default: [], }, // userId that used the discount code

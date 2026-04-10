@@ -57,6 +57,7 @@ class DiscountService {
             discount_code: code,
             discount_start_date: new Date(start_date),
             discount_end_date: new Date(end_date),
+            discount_max_value: max_value,
             discount_max_uses: max_uses,
             discount_uses_count: uses_count,
             discount_users_used: users_used,
@@ -103,6 +104,7 @@ class DiscountService {
             discount_code: code,
             discount_start_date: new Date(start_date),
             discount_end_date: new Date(end_date),
+            discount_max_value: max_value,
             discount_max_uses: max_uses,
             discount_uses_count: uses_count,
             discount_users_used: users_used,
@@ -195,19 +197,19 @@ class DiscountService {
             discount_is_active,
             discount_max_uses,
             discount_start_date,
-            disount_end_date,
+            discount_end_date,
             discount_min_order_value,
             discount_users_used,
             discount_type,
             discount_max_uses_per_user,
             discount_value,
-
+            discount_max_value
         } = foundDiscount
 
         if (!discount_is_active) throw new NotFoundError('Discount code expired!')
         if (!discount_max_uses) throw new NotFoundError('Discount code not available!')
 
-        if (new Date() < new Date(discount_start_date) || new Date() > new Date(disount_end_date)) {
+        if (new Date() < new Date(discount_start_date) || new Date() > new Date(discount_end_date)) {
             throw new NotFoundError('Discount code has expired!')
         }
 
@@ -231,7 +233,7 @@ class DiscountService {
         }
 
         // check xem discount nay la fixed_amount hay percentage
-        const amount = discount_type == 'fixed_amount' ? discount_value : totalOrder * (discount_value / 100)
+        const amount = discount_type == 'fixed_amount' ? discount_value : Math.min(totalOrder * (discount_value / 100), discount_max_value)
 
         return {
             totalOrder,

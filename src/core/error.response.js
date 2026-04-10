@@ -42,14 +42,14 @@ class NotFoundError extends ErrorResponse {
 
 class ForbiddenError extends ErrorResponse {
 
-    constructor(message = ReasonPhrases.FORBIDDEN, statusCode = StatusCode.FORBIDDEN) {
+    constructor(message = ReasonPhrases.FORBIDDEN, statusCode = StatusCodes.FORBIDDEN) {
         super(message, statusCode)
     }
 }
 
 class InternalServerError extends ErrorResponse {
 
-    constructor(message = ReasonPhrases.INTERNAL_SERVER_ERROR, statusCode = StatusCode.INTERNAL_SERVER_ERROR) {
+    constructor(message = ReasonPhrases.INTERNAL_SERVER_ERROR, statusCode = StatusCodes.INTERNAL_SERVER_ERROR) {
         super(message, statusCode)
     }
 }

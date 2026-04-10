@@ -1,7 +1,7 @@
 'use strict'
 
 const { findCartById, checkProductByServer, deleteItemsInCart } = require("../models/repository/cart.repo")
-const { BadRequestError, ConflictRequestEror, AuthFailureError, ForbiddenError, InternalServerError } = require('../core/error.response')
+const { BadRequestError, ConflictRequestError, AuthFailureError, ForbiddenError, InternalServerError } = require('../core/error.response')
 const { getDiscountAmount } = require("./discount.service")
 const { releaseLock, acquireLock } = require("./redis.service")
 const { reservationInventory, rollbackInventory, restoreInventoryStock } = require("../models/repository/inventory.repo")
