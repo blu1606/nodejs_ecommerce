@@ -23,6 +23,7 @@ const checkProductByServer = async (products) => {
                 productId: product.productId
             }
         }
+        return null
     }))
 }
 
@@ -32,7 +33,7 @@ const createUserCart = async ({ userId, product }) => {
             $addToSet: {
                 cart_products: product
             }
-        }, options = { upsert: true, new: true }
+        }, options = { new: true }
 
     return await cart.findOneAndUpdate(query, updateOrInsert, options)
 }
@@ -65,9 +66,25 @@ const deleteItemInCart = async ({ userId, productId }) => {
     return await cart.updateOne(query, updateSet)
 }
 
+const deleteItemsInCart = async ({ userId, productIds = [] }) => {
+    const query = { cart_userId: userId, cart_state: 'active' },
+        updateSet = {
+            $pull: {
+                cart_products: {
+                    productId: { $in: productIds }
+                }
+            }
+        }
+
+    return await cart.updateOne(query, updateSet)
+}
+
 module.exports = {
     findCartById,
     checkProductByServer,
     createUserCart,
-    updateUserCartQuantity
+    updateUserCartQuantity,
+    deleteItemInCart,
+    findCartByUserId,
+    deleteItemsInCart
 }

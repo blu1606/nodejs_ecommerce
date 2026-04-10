@@ -1,41 +1,43 @@
 'use strict'
 
-const { findCartById, checkProductByServer } = require("../models/repository/cart.repo")
-const { BadRequestError, ConflictRequestEror, AuthFailureError, ForbiddenError } = require('../core/error.response')
+const { findCartById, checkProductByServer, deleteItemsInCart } = require("../models/repository/cart.repo")
+const { BadRequestError, ConflictRequestEror, AuthFailureError, ForbiddenError, InternalServerError } = require('../core/error.response')
 const { getDiscountAmount } = require("./discount.service")
+const { releaseLock, acquireLock } = require("./redis.service")
+const { reservationInventory, rollbackInventory, restoreInventoryStock } = require("../models/repository/inventory.repo")
+const orderModel = require("../models/order.model")
+const { getOneOrderByUser, updateStatus, extractProductsFromOrder, findOrderById } = require("../models/repository/order.repo")
+
+const VALID_TRANSITIONS = {
+    pending: ['confirmed', 'cancelled'],
+    confirmed: ['shipped', 'cancelled'],
+    shipped: ['delivered'],
+    delivered: [],      // terminal state
+    cancelled: []       // terminal state
+}
 
 class CheckoutService {
-    /*
-        {
-            cartId,
-            userId,
-            shop_order_ids: [
-                {
-                    shopId, 
-                    shop_discounts: [
-                        {
-                            "shopId", 
-                            "discountId",
-                            codeId: 
-                        }
-                    ],
-                    item_products: [
-                        {
-                            price,
-                            quantity, 
-                            productId
-                        }
-                    ]
-                }
-            ]
-        }
-    */
+
+    /**
+     * Validate cart, verify products, calculate prices and apply discounts
+     * @param {Object} params
+     * @param {string} params.cartId - Active cart ID
+     * @param {string} params.userId - User ID
+     * @param {Array<{shopId, shop_discounts, item_products}>} params.shop_order_ids - Orders grouped by shop
+     * @returns {{shop_order_ids, shop_order_ids_new, checkout_order}} Review summary with pricing
+     * @throws {BadRequestError} If cart not found or products unavailable
+     */
     static async checkoutReview({
         cartId, userId, shop_order_ids
     }) {
-        // check cartId ton tai khong? 
+        // 1. validate input
+        if (!cartId || !userId) throw new BadRequestError('Missing cartId or userId')
+        if (!Array.isArray(shop_order_ids) || !shop_order_ids.length) {
+            throw new BadRequestError('shop_order_ids must be a non-empty array')
+        }
+
         const foundCart = await findCartById(cartId)
-        if (!foundCart) throw new BadRequestError(`Cart not exist!`)
+        if (!foundCart) throw new BadRequestError(`Cart not found`)
 
         const checkout_order = {
             totalPrice: 0,
@@ -44,20 +46,25 @@ class CheckoutService {
             totalCheckout: 0
         }, shop_order_ids_new = []
 
-        // tinh tong tien bill 
-        for (let i = 0; i < shop_order_ids.length; i++) {
-            const { shopId, shop_discounts = [], item_products = [] } = shop_order_ids[i]
+        // 2. calculate total bill
+        for (const shopOrderId of shop_order_ids) {
+            const { shopId, shop_discounts = [], item_products = [] } = shopOrderId
 
-            // check product available 
             const checkProductServer = await checkProductByServer(item_products)
-            if (!checkProductServer[0]) throw new BadRequestError(`order wrong!!!`)
 
-            // tong tien don hang
+            // find invalid products (returned null from repo)
+            const invalidProducts = item_products.filter(
+                (_, idx) => !checkProductServer[idx]
+            )
+            if (invalidProducts.length) {
+                const invalidIds = invalidProducts.map(p => p.productId).join(', ')
+                throw new BadRequestError(`Products not found or unavailable: ${invalidIds}`)
+            }
+
             const checkoutPrice = checkProductServer.reduce((acc, product) => {
                 return acc + (product.quantity * product.price)
             }, 0)
 
-            // tong tien truoc khi xu li 
             checkout_order.totalPrice += checkoutPrice
 
             const itemCheckout = {
@@ -68,26 +75,21 @@ class CheckoutService {
                 item_products: checkProductServer
             }
 
-            // neu shop_discounts ton tai > 0, check xem co hop le hay khong
+            // apply discount (currently supports single discount per shop)
             if (shop_discounts.length > 0) {
-                // gia su chi co mot amount
-                // get amount discount 
                 const { totalPrice, discount = 0 } = await getDiscountAmount({
                     codeId: shop_discounts[0].codeId,
                     userId,
                     shopId,
                     products: checkProductServer
                 })
-                // tong cong discount giam gia
                 checkout_order.totalDiscount += discount
 
-                // neu tien giam gia lon hon 0
                 if (discount > 0) {
                     itemCheckout.priceApplyDiscount = checkoutPrice - discount
                 }
             }
 
-            // tong thanh toan cuoi cung
             checkout_order.totalCheckout += itemCheckout.priceApplyDiscount
             shop_order_ids_new.push(itemCheckout)
 
@@ -98,6 +100,171 @@ class CheckoutService {
             shop_order_ids_new,
             checkout_order
         }
+    }
+
+    /**
+    * Reserve inventory for all products with distributed locking
+    * @throws {BadRequestError} if lock fails or out of stock
+    * @returns {Array<{productId, quantity}>} reserved products for rollback
+    */
+    static async _reserveAllProducts(products, cartId) {
+        const reservedProducts = []
+        for (const product of products) {
+            const { productId, quantity } = product;
+
+            // 1. lock
+            const keyLock = await acquireLock(productId);
+            if (!keyLock) throw new BadRequestError(`Product ${productId} changed, please back to cart!`)
+
+            // 2. reserve
+            const isReservation = await reservationInventory({
+                productId, quantity, cartId
+            })
+
+            if (!isReservation.modifiedCount) {
+                await releaseLock(keyLock);
+                throw new BadRequestError(`Product ${productId} out of stock!`)
+
+            }
+            await releaseLock(keyLock);
+            reservedProducts.push({ productId, quantity })
+        }
+        return reservedProducts
+    }
+
+    static async _rollbackReservations(reservedProducts, cartId) {
+        for (const { productId, quantity } of reservedProducts) {
+            try {
+                await rollbackInventory({ productId, quantity, cartId })
+            } catch (err) {
+                console.error('Rollback failed:', productId, err)
+            }
+        }
+    }
+
+    // order 
+
+    static async orderByUser({
+        shop_order_ids,
+        cartId,
+        userId,
+        user_address = {},
+        user_payment = {}
+    }) {
+        const { shop_order_ids_new, checkout_order } = await CheckoutService.checkoutReview({
+            cartId,
+            userId,
+            shop_order_ids: shop_order_ids
+        })
+
+        // double check if overstock or not 
+        // get new array Products
+        const products = extractProductsFromOrder(shop_order_ids_new)
+        console.log('[1]:', products)
+        let reservedProducts = []
+        let newOrder
+        try {
+            // Reserve inventory for all products with distributed locking
+            reservedProducts = await CheckoutService._reserveAllProducts(products, cartId)
+
+            // make order, delete cart
+            newOrder = await orderModel.create({
+                order_userId: userId,
+                order_checkout: checkout_order,
+                user_shipping: user_address,
+                order_payment: user_payment,
+                order_products: shop_order_ids_new
+            })
+            if (!newOrder) throw new BadRequestError(`create order failed`)
+
+        } catch (error) {
+            // 4. rollback all reservedProduct
+            await CheckoutService._rollbackReservations(reservedProducts, cartId)
+            throw error
+        }
+
+        // remove product in my cart
+        const productIds = products.map(p => p.productId)
+        const delItem = await deleteItemsInCart({ userId, productIds })
+        if (!delItem.modifiedCount) console.error('Cart cleanup failed:')
+        return newOrder
+    }
+
+
+
+    /**
+     * Cancel Order [Users]
+     * Restore inventory stock and mark order as cancelled
+     * @param {Object} params
+     * @param {string} params.userId
+     * @param {string} params.orderId
+     * @returns {Object} updated order
+     * @throws {BadRequestError} if order not found or not cancellable
+     */
+    static async cancelOrderByUser({ userId, orderId }) {
+        const orderItem = await getOneOrderByUser({ userId, orderId })
+        if (!orderItem) throw new BadRequestError('Order not found!')
+
+        const NON_CANCELLABLE = ['shipped', 'delivered', 'cancelled']
+        if (NON_CANCELLABLE.includes(orderItem.order_status)) {
+            throw new BadRequestError(`Cannot cancel order with status: ${orderItem.order_status}`)
+        }
+
+        const products = extractProductsFromOrder(orderItem.order_products)
+
+        for (const { productId, quantity } of products) {
+            try {
+                await restoreInventoryStock({ productId, quantity })
+            } catch (err) {
+                console.error('Restore stock failed:', productId, err)
+            }
+        }
+
+        return await updateStatus({ orderId: orderItem._id, orderStatus: 'cancelled' })
+    }
+
+    /**
+     * Update Order Status [Shop | Admin]
+     * Includes authorization check and status transition validation
+     * @param {Object} params
+     * @param {string} params.shopId
+     * @param {string} params.orderId
+     * @param {string} params.newStatus
+     * @returns {Object} Updated order result
+     * @throws {BadRequestError} if order not found or invalid transition
+     * @throws {ForbiddenError} if shop has no permission
+     */
+    static async updateOrderStatusByShop({ shopId, orderId, newStatus }) {
+        // 1. Find the order
+        const orderItem = await findOrderById(orderId)
+        if (!orderItem) throw new BadRequestError('Order not found!')
+
+        // 2. Authorization: Check if shop has items in this order
+        const shopProducts = orderItem.order_products.filter(item => item.shopId === shopId)
+        if (shopProducts.length === 0) {
+            throw new ForbiddenError('Shop does not have permission to update this order')
+        }
+
+        // 3. Validate transition
+        const currentStatus = orderItem.order_status
+        if (!VALID_TRANSITIONS[currentStatus]?.includes(newStatus)) {
+            throw new BadRequestError(`Invalid status transition: ${currentStatus} -> ${newStatus}`)
+        }
+
+        // 4. Side effects
+        if (newStatus === 'cancelled') {
+            const products = extractProductsFromOrder(shopProducts)
+            for (const { productId, quantity } of products) {
+                try {
+                    await restoreInventoryStock({ productId, quantity })
+                } catch (err) {
+                    console.error('Restore stock failed:', productId, err)
+                }
+            }
+        }
+
+        // 5. Update status
+        return await updateStatus({ orderId: orderItem._id, orderStatus: newStatus })
     }
 }
 

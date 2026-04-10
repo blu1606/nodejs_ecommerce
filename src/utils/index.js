@@ -3,9 +3,9 @@
 const _ = require('lodash')
 const { Types } = require('mongoose')
 
-const convertToObjectIdMongodb = id => new Types.ObjectId(id)
+const convertToObjectIdMongodb = id => new Types.ObjectId.createFromHexString(id)
 const getInfoData = ({ fields = [], object = {} }) => {
-    return _.pick( object, fields )
+    return _.pick(object, fields)
 }
 
 const getSelectData = (select = []) => {
@@ -17,7 +17,7 @@ const unGetSelectData = (select = []) => {
 }
 
 const removeUndefinedObject = obj => {
-    Object.keys(obj).forEach( k => {
+    Object.keys(obj).forEach(k => {
         if (obj[key] && typeof obj[key] === 'object') removeUndefined(obj[key]);
         else if (obj[k] == null) {
             delete obj[k]
@@ -29,11 +29,11 @@ const removeUndefinedObject = obj => {
 
 const updateNestedObjectParser = obj => {
     const final = {}
-    Object.keys(obj).forEach( k => {
+    Object.keys(obj).forEach(k => {
         // Check if the value is an object, not null, and not an array
-        if ( typeof obj[k] === 'object' && obj[k] !== null && !Array.isArray(obj[k])) {
+        if (typeof obj[k] === 'object' && obj[k] !== null && !Array.isArray(obj[k])) {
             const response = updateNestedObjectParser(obj[k])
-            Object.keys(response).forEach( a => {
+            Object.keys(response).forEach(a => {
                 // Use dot notation for nested fields
                 final[`${k}.${a}`] = response[a] // Corrected: use response[a]
             })

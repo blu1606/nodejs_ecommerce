@@ -1,55 +1,44 @@
-# Section 10: Authentication Middleware & Logout Implementation
+# Section 10: Order Management & Inventory Synchronization
 
-> Ngày: 2026-04-08
+> Ngày: 2026-04-11
 > Các file thay đổi: 
-> - src/auth/authUtils.js
-> - src/controllers/access.controller.js
-> - src/services/access.service.js
-> - src/services/keyToken.service.js
-> - src/postman/access/logout.post.http
+> - `src/models/repository/order.repo.js`
+> - `src/models/repository/inventory.repo.js`
+> - `src/services/checkout.service.js`
+> - `src/utils/index.js`
 
 ## Tổng quan
-Section này tập trung vào việc bảo mật các endpoint thông qua Middleare xác thực (Authentication), triển khai tính năng Đăng xuất (Logout) và xử lý các vấn đề phát sinh khi quản lý Token trong cơ sở dữ liệu.
+Section này tập trung vào việc hoàn thiện logic nghiệp vụ cho đơn hàng, bao gồm việc hủy đơn hàng (Order Cancellation) bởi người dùng và cập nhật trạng thái đơn hàng (Status Update) bởi shop. Cốt lõi của phần này là đảm bảo tính nhất quán giữa trạng thái đơn hàng và số lượng tồn kho (Inventory).
 
 ## Kiến thức đã học
 
-### 1. Luồng xác thực (Authentication Flow)
-- **What:** Xây dựng middleware để kiểm tra tính hợp lệ của request trước khi cho phép truy cập vào các route bảo mật (protected routes).
-- **Requirements:** 
-    - `x-client-id`: ID của người dùng.
-    - `authorization`: Access Token được cấp sau khi login.
-- **Process:** Middleware trích xuất `userId`, tìm `keyStore` tương ứng, sau đó verify `accessToken` bằng `publicKey` được lưu trữ.
+### 1. State Machine trong Quản lý Đơn hàng
+- **What:** Một tập hợp các quy tắc xác định trạng thái nào có thể chuyển sang trạng thái nào.
+- **Why:** Tránh việc dữ liệu bị sai lệch (ví dụ: không thể hủy một đơn hàng đã được giao).
+- **Code:** Định nghĩa `VALID_TRANSITIONS` trong `checkout.service.js`.
 
-### 2. Stateful Logout
-- **What:** Logout trong hệ thống này không chỉ đơn thuần là xóa token ở phía Client mà còn xóa bản ghi `keyStore` trong Database.
-- **Why:** Để đảm bảo Token đó không còn hiệu lực ngay cả khi nó chưa hết hạn (Hạn chế rủi ro bị chiếm dụng Token).
-- **Code:** `src/services/access.service.js` (hàm `logout`).
+### 2. Inventory Restoration (Hoàn trả kho)
+- **What:** Logic tăng lại số lượng sản phẩm trong kho khi đơn hàng bị hủy.
+- **Why:** Đảm bảo số lượng tồn kho chính xác khi giao dịch không thành công. Khác với `rollback` (dùng khi checkout lỗi), `restore` dùng khi đơn hàng đã tồn tại nhưng bị hủy sau đó.
+- **Code:** Hàm `restoreInventoryStock` trong `inventory.repo.js`.
 
-### 3. Mongoose API Migration (v7+)
-- **What:** Chuyển đổi từ hàm `.remove()` sang `.deleteOne()` hoặc `.deleteMany()`.
-- **Why:** Mongoose phiên bản 7 trở đi đã gỡ bỏ hoàn toàn hàm `.remove()` để tăng tính tường minh cho API.
-- **Code:** `src/services/keyToken.service.js`.
-
-### 4. JavaScript Pitfall: Object Destructuring
-- **What:** Lỗi mismatch khi truyền tham số giữa Controller và Service.
-- **Example:** Nếu Service định nghĩa `logout = async ({ keyStore })`, thì Controller phải gọi `logout({ keyStore: req.keyStore })` thay vì truyền trực tiếp `logout(req.keyStore)`.
-- **Note:** Luôn kiểm tra kỹ cấu trúc đối tượng khi sử dụng Destructuring trong tham số hàm.
+### 3. Shop Authorization & Ownership
+- **What:** Kiểm tra xem Shop có quyền tác động lên đơn hàng hay không.
+- **Why:** Trong hệ thống Multi-vendor, một shop chỉ được phép cập nhật trạng thái cho các đơn hàng có chứa sản phẩm của mình.
+- **Code:** Logic filter `shopProducts` trong `updateOrderStatusByShop`.
 
 ## Code Changes Summary
 | File | Hành động | Mô tả |
 |---|---|---|
-| src/auth/authUtils.js | Modified | Kiểm tra Header và thực hiện verify JWT token. |
-| src/controllers/access.controller.js | Modified | Implement method `logout` và bọc dữ liệu vào object. |
-| src/services/access.service.js | Modified | Implement logic xóa token khi người dùng đăng xuất. |
-| src/services/keyToken.service.js | Modified | Thay thế hàm `.remove()` bằng `.deleteOne()`. |
-| src/postman/access/logout.post.http | New | File test cho API Logout với đầy đủ Header cần thiết. |
+| `src/models/repository/order.repo.js` | Modified | Export `extractProductsFromOrder`, thêm `findOrderById`. |
+| `src/models/repository/inventory.repo.js` | Modified | Thêm `restoreInventoryStock`, fix lỗi import `convertToObjectIdMongodb`. |
+| `src/services/checkout.service.js` | Modified | Triển khai `cancelOrderByUser` và `updateOrderStatusByShop` với đầy đủ validation. |
+| `src/utils/index.js` | Modified | Cập nhật `convertToObjectIdMongodb` sử dụng `createFromHexString`. |
 
 ## Câu hỏi cần tìm hiểu thêm
-- [ ] Sự khác biệt giữa `accessToken` và `refreshToken` trong việc bảo mật hệ thống.
-- [ ] Tại sao sử dụng `publicKey` và `privateKey` (Asymmetric) lại an toàn hơn một Secret Key duy nhất?
-- [ ] Cách triển khai Refresh Token rotation để tối ưu hóa trải nghiệm người dùng.
+- [ ] Cách triển khai MongoDB Transactions (Session) để đảm bảo tính nguyên tử khi update Order và Inventory đồng thời.
+- [ ] Xử lý logic Partial Cancellation (hủy một phần đơn hàng) trong hệ thống Multi-vendor.
 
 ## Ghi chú cá nhân
-- Cẩn thận với các API deprecated khi nâng cấp thư viện (Mongoose).
-- Luôn sử dụng object cho tham số hàm Service để dễ dàng mở rộng.
-- Token là tài sản nhạy cảm, cần quản lý vòng đời (Lifecycle) chặt chẽ trong DB.
+- Luôn ưu tiên dùng **Whitelist** cho việc chuyển đổi trạng thái thay vì Blacklist để code an toàn hơn.
+- Cẩn thận với `.lean()` khi muốn update dữ liệu.
