@@ -205,8 +205,7 @@ class CheckoutService {
         const orderItem = await getOneOrderByUser({ userId, orderId })
         if (!orderItem) throw new BadRequestError('Order not found!')
 
-        const NON_CANCELLABLE = ['shipped', 'delivered', 'cancelled']
-        if (NON_CANCELLABLE.includes(orderItem.order_status)) {
+        if (!VALID_TRANSITIONS[orderItem.order_status]?.includes('cancelled')) {
             throw new BadRequestError(`Cannot cancel order with status: ${orderItem.order_status}`)
         }
 

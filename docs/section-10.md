@@ -14,8 +14,8 @@ Section này tập trung vào việc hoàn thiện logic nghiệp vụ cho đơn
 
 ### 1. State Machine trong Quản lý Đơn hàng
 - **What:** Một tập hợp các quy tắc xác định trạng thái nào có thể chuyển sang trạng thái nào.
-- **Why:** Tránh việc dữ liệu bị sai lệch (ví dụ: không thể hủy một đơn hàng đã được giao).
-- **Code:** Định nghĩa `VALID_TRANSITIONS` trong `checkout.service.js`.
+- **Why:** Tránh việc dữ liệu bị sai lệch. Sử dụng `VALID_TRANSITIONS` tập trung giúp logic đồng nhất giữa User và Shop. Thay vì kiểm tra "không phải trạng thái X", hãy kiểm tra "có thể chuyển sang trạng thái Hủy hay không".
+- **Code:** `if (!VALID_TRANSITIONS[status]?.includes('cancelled'))` trong `checkout.service.js`.
 
 ### 2. Inventory Restoration (Hoàn trả kho)
 - **What:** Logic tăng lại số lượng sản phẩm trong kho khi đơn hàng bị hủy.
