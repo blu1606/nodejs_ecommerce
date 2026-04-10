@@ -7,15 +7,9 @@ const keytokenModel = require('../models/keytoken.model') // Assuming this is th
 class AccessController {
 
     handlerRefreshToken = async (req, res, next) => {
-        // new SuccessResponse({
-        //     message: 'Get token success',
-        //     metadata: await AccessService.handlerRefreshToken( req.body.refreshToken )
-        // }).send(res)
-
-        // v2 fixed, no need accessToken
         new SuccessResponse({
             message: 'Get token success!',
-            metadata: await AccessService.handlerRefreshTokenV2({
+            metadata: await AccessService.handlerRefreshToken({
                 refreshToken: req.refreshToken,
                 user: req.user,
                 keyStore: req.keyStore
@@ -26,7 +20,7 @@ class AccessController {
 
     logout = async (req, res, next) => {
         const delKey = await keytokenModel.deleteOne({ _id: req.keyStore._id })
-        console.log({delKey})
+        console.log({ delKey })
         new SuccessResponse({
             message: 'Logout Success',
             metadata: delKey
@@ -35,11 +29,11 @@ class AccessController {
 
     login = async (req, res, next) => {
         new SuccessResponse({
-            metadata: await AccessService.login( req.body )
+            metadata: await AccessService.login(req.body)
         }).send(res)
     }
 
-    signUp = async ( req, res, next ) => {
+    signUp = async (req, res, next) => {
         new CREATED({
             message: 'Regiserted OK!',
             metadata: await AccessService.signUp(req.body),

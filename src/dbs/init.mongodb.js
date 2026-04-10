@@ -2,7 +2,7 @@
 
 const mongoose = require('mongoose')
 
-const {db: {host, name, port}} = require('../configs/config.mongodb')
+const { db: { host, name, port } } = require('../configs/config.mongodb')
 const connectString = `mongodb://${host}:${port}/${name}`
 console.log(connectString)
 class Database {
@@ -15,13 +15,13 @@ class Database {
     connect(type = 'mongodb') {
         if (1 === 1) {
             mongoose.set('debug', true)
-            mongoose.set('debug', {color: true})
+            mongoose.set('debug', { color: true })
         }
 
-        mongoose.connect( connectString, {
+        mongoose.connect(connectString, {
             maxPoolSize: 50
-        }).then( _ => console.log(`Connected Mongodb Success`))
-            .catch( err => console.log(`Error Connect!`))
+        }).then(_ => console.log(`Connected Mongodb Success`))
+            .catch(err => console.log(`Error Connect!`))
     }
 
     static getInstance() {
@@ -30,6 +30,16 @@ class Database {
         }
         return Database.instance
     }
+
+    async disconnect() {
+        try {
+            await mongoose.disconnect()
+            console.log(`Mongodb disconnected successfully!`)
+        } catch (err) {
+            console.error(`Error disconnecting Mongodb:`, err)
+        }
+    }
+
 }
 
 const instanceMongodb = Database.getInstance()

@@ -35,10 +35,30 @@ class DiscountController {
     }
 
     getAllDiscountCodesWithProducts = async (req, res, next) => {
-        new SuccessResponse ({
+        new SuccessResponse({
             message: 'Successful Code Found',
             metadata: await DiscountService.getAllDiscountCodesWithProduct({
                 ...req.query
+            })
+        }).send(res)
+    }
+
+    deleteDiscountCode = async (req, res, next) => {
+        new SuccessResponse({
+            message: 'Successful Code Deleted',
+            metadata: await DiscountService.deleteDiscountCode({
+                shopId: req.user.userId,
+                codeId: req.params.codeId
+            })
+        }).send(res)
+    }
+
+    cancelDiscountCode = async (req, res, next) => {
+        new SuccessResponse({
+            message: 'Successful Code Canceled',
+            metadata: await DiscountService.cancelDiscountCode({
+                ...req.body,
+                userId: req.user.userId
             })
         }).send(res)
     }

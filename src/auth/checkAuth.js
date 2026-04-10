@@ -1,6 +1,6 @@
 'use strict'
 
-const { findById } = require("../services/apikey.service")
+const { findById } = require("../models/repository/apikey.repo")
 
 const HEADER = {
     API_KEY: 'x-api-key',
@@ -25,11 +25,11 @@ const apiKey = async (req, res, next) => {
         req.objKey = objKey
         return next()
     } catch (error) {
-        
+
     }
 }
 
-const permission = ( permission ) => {
+const permission = (permission) => {
     return (req, res, next) => {
         if (!req.objKey.permissions) {
             return res.status(403).json({

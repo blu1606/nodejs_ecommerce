@@ -15,5 +15,7 @@ router.use(authenticationV2)
 
 router.post('', asyncHandler(discountController.createDiscountCode))
 router.get('', asyncHandler(discountController.getAllDiscountCode))
+router.delete('/:codeId', asyncHandler(discountController.deleteDiscountCode))
+router.post('/cancel', asyncHandler(discountController.cancelDiscountCode))
 
 module.exports = router

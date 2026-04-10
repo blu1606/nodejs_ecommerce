@@ -1,12 +1,16 @@
 'use strict'
-const shopModel = require('../models/shop.model')
 const bcrypt = require('bcrypt')
 const crypto = require('crypto')
-const KeyTokenService = require('./keyToken.service')
+const { createKeyToken,
+    removeKeyById,
+    findByRefreshTokenUsed,
+    findByRefreshToken,
+    deleteKeyById,
+    updateRefreshTokenById } = require('../models/repository/keytoken.repo')
 const { createTokenPair, verifyJWT } = require('../auth/authUtils')
 const { getInfoData } = require('../utils/index')
-const { BadRequestError, ConflictRequestEror, AuthFailureError, ForbiddenError } = require('../core/error.response')
-const { findByEmail } = require('./shop.service')
+const { BadRequestError, AuthFailureError, ForbiddenError } = require('../core/error.response')
+const { findByEmail, createShop } = require('../models/repository/shop.repo')
 
 const RoleShop = {
     SHOP: 'SHOP',
@@ -17,177 +21,126 @@ const RoleShop = {
 
 class AccessService {
 
-    static handlerRefreshTokenV2 = async ( { keyStore, user, refreshToken} ) => {
-        
-        const { userId, email } = user; 
+    /**
+     * Handles token rotation with replay attack detection 
+     * @param {Object} params
+     * @param {Object} params.keyStore - Token document attached by auth middleware
+     * @param {Object} params.user {{userId: string, email: string}} - user from request
+     * @param {string} params.refreshToken - refreshToken from request
+     * @returns {Object} new tokens { accessToken, refreshToken } and user
+     * @throws {ForbiddenError} If refresh token was already used (replay attack detected) 
+     * @throws {AuthFailureError} if refreshToken from keyStore dont match with refreshToken from current session in req
+     * @throws {AuthFailureError} if didnt find any shop by email 
+     */
+    static handlerRefreshToken = async ({ keyStore, user, refreshToken }) => {
+        const { userId, email } = user;
 
         if (keyStore.refreshTokensUsed.includes(refreshToken)) {
-            await KeyTokenService.deleteKeyById( userId)
+            await deleteKeyById(userId)
             throw new ForbiddenError('Something wrong happend!! Please re-login')
-
         }
 
         if (keyStore.refreshToken !== refreshToken) throw new AuthFailureError(' Shop not registered!!')
-        
-        const foundShop = await findByEmail({ email})
-        if (!foundShop) throw new AuthFailureError(' Shop not registered!!')
-        
-        // create new tokens
-        const tokens = await createTokenPair({ userId, email}, keyStore.publicKey, keyStore.privateKey)
 
-        // update token
-        await keyStore.updateOne({
-            $set: {
-                refreshToken: tokens.refreshToken
-            },
-            $addToSet: {
-                refreshTokensUsed: refreshToken
-            }
+        const foundShop = await findByEmail({ email })
+        if (!foundShop) throw new AuthFailureError(' Shop not registered!!')
+
+        const tokens = await createTokenPair({ userId, email }, keyStore.publicKey, keyStore.privateKey)
+
+        await updateRefreshTokenById({
+            id: keyStore._id,
+            refreshToken,
+            tokens
         })
 
-        return {
-            user,
-            tokens
-        }
+        return { user, tokens }
     }
 
-    /*
-        chick this token used?
-    */
-    static handlerRefreshToken = async ( refreshToken ) => {
-
-        // check whether this token is used or not 
-        const foundToken = await KeyTokenService.findByRefreshTokenUsed( refreshToken)
-        if (foundToken) {
-            // console.log(foundToken)
-            // decode to detect who currently using this token 
-            const {userId, email} = await verifyJWT( refreshToken, foundToken.privateKey)
-            console.log({ userId, email})
-            // if already in used then delete all token in keyStore
-            await KeyTokenService.deleteKeyById( userId)
-            throw new ForbiddenError('Something wrong happend!! Please re-login')
-        }
-
-        const holderToken = await KeyTokenService.findByRefreshToken( refreshToken )
-        if (!holderToken) throw new AuthFailureError(' Shop not registered!!')
-        console.log(`holderToken:: ${holderToken}`)
-        // verify token
-        const { userId, email} = await verifyJWT( refreshToken, holderToken.privateKey)
-        console.log(`[2]--`, { userId, email})
-        // check UserId
-        const foundShop = await findByEmail({ email})
-        if (!foundShop) throw new AuthFailureError(' Shop not registered!!')
-        
-        // create new tokens
-        const tokens = await createTokenPair({ userId, email}, holderToken.publicKey, holderToken.privateKey)
-
-        // update token
-        await holderToken.updateOne({
-            $set: {
-                refreshToken: tokens.refreshToken
-            },
-            $addToSet: {
-                refreshTokensUsed: refreshToken
-            }
-        })
-
-        return {
-            user: { userId, email},
-            tokens
-        }
-    }
-
-    static logout = async(  keyStore ) => {
-        const delKey = await KeyTokenService.removeKeyById( keyStore._id )
-        console.log( {delKey})
+    /**
+     * Logout user
+     * @param {Object} keyStore - Token document attached by auth middleware
+     * @returns {{acknowledged: boolean, deletedCount: number}} MongoDB deletion result
+     */
+    static logout = async (keyStore) => {
+        const delKey = await removeKeyById(keyStore._id)
+        console.log({ delKey })
         return delKey
     }
 
-    /*
-        1 - check email in dbs 
-        2 - match password 
-        3 - create AccessToken and RefreshToken and save
-        4 - generate tokens 
-        5 - get data return login
-    */
-    static login = async( { email, password, refreshToken = null}) => {
-        
 
-        // 1. check email in dbs
-        const foundShop = await findByEmail({email})
-        if (!foundShop) throw new BadRequestError('Shop not registered!')
-        
-        // 2. match password
-        const match = bcrypt.compare( password, foundShop.password)
-        if (!match) throw new AuthFailureError('Authentication error')
-        
-        // 3. create AccessToken and RefreshToken and save
+    /**
+     * Generates cryptographic key pair and creates authentication tokens
+     * @param {{_id: string, email: string}} shop - Mongoose shop document 
+     * @returns {{accessToken: String, refreshToken: String}}
+     * @throws {BadRequestError} If createKeyToken errors return nulls
+     * @access private
+     */
+    static _handleTokenAndKey = async (shop) => {
         const privateKey = crypto.randomBytes(64).toString('hex')
         const publicKey = crypto.randomBytes(64).toString('hex')
 
-        // 4. generate token
-        const { _id: userId } = foundShop
-        const tokens = await createTokenPair({ userId, email}, publicKey, privateKey)
-
-        await KeyTokenService.createKeyToken({
+        const tokens = await createTokenPair({ userId: shop._id, email: shop.email }, publicKey, privateKey)
+        const keyStore = await createKeyToken({
             refreshToken: tokens.refreshToken,
-            privateKey, publicKey, userId
+            privateKey, publicKey,
+            userId: shop._id
         })
+        if (!keyStore) throw new BadRequestError('Error: keyStore error!')
+
+        return tokens
+    }
+
+    /**
+     * Handle login user and create new tokens pair for user
+     * @param {Object} params
+     * @param {string} params.email - User's email
+     * @param {string} params.password - User's password
+     * @returns {{shop: Object, tokens: Object}} Shop info and auth tokens
+     * @throws {BadRequestError} If didnt find shop via user's email
+     * @throws {AuthFailureError} If password decrypt not match with one in the dbs
+     */
+    static login = async ({ email, password }) => {
+
+        const foundShop = await findByEmail({ email })
+        if (!foundShop) throw new BadRequestError('Error: Shop not registered!')
+
+        const matchPassword = await bcrypt.compare(password, foundShop.password)
+        if (!matchPassword) throw new AuthFailureError('Error: Auth Failure!')
+
+        const tokens = await this._handleTokenAndKey(foundShop)
+
         return {
-            shop: getInfoData({ fields: ['_id', 'name', 'email'], object: foundShop}),
+            shop: getInfoData({ fields: ['_id', 'name', 'email'], object: foundShop }),
             tokens
         }
     }
 
+    /**
+    * Register a new shop account
+    * @param {Object} params
+    * @param {string} params.name - Shop display name
+    * @param {string} params.email - Shop email (must be unique)
+    * @param {string} params.password - Plain-text password (will be hashed)
+    * @returns {{shop: Object, tokens: Object}} Created shop info and auth tokens
+    * @throws {BadRequestError} If email already registered
+    * @throws {BadRequestError} If shop creation fails
+    */
+    static signUp = async ({ name, email, password }) => {
 
-    static signUp = async({name, email, password}) => {
-
-        // step 1: check if email exists
-        const holderShop = await shopModel.findOne({email}).lean() // lean for faster search
-
-        if (holderShop) {
-            throw new BadRequestError('Error: Shop already registered!')
-        }
+        const holderShop = await findByEmail({ email })
+        if (holderShop) throw new BadRequestError('Error: Shop already registered!')
 
         const passwordHash = await bcrypt.hash(password, 10)
 
-        const newShop = await shopModel.create({
+        const newShop = await createShop({
             name, email, password: passwordHash, roles: [RoleShop.SHOP]
         })
-        
-        if (newShop) {
-            // create privateKey, publicKey
-            const privateKey = crypto.randomBytes(64).toString('hex')
-            const publicKey = crypto.randomBytes(64).toString('hex')
-            
-            console.log({ privateKey, publicKey })
+        if (!newShop) throw new BadRequestError('Error: Create shop failed!')
 
-            const keyStore = await KeyTokenService.createKeyToken({
-                userId: newShop._id,
-                publicKey,
-                privateKey
-            })
-
-            if (!keyStore) {
-                throw new BadRequestError('Error: Keystore already registered!')
-            }
-
-            // create token pair 
-            const tokens = await createTokenPair({userId: newShop._id, email},  publicKey, privateKey)
-            console.log(`Create tokens success::`, tokens)
-
-            return {
-                code: 201,
-                metadata: {
-                    shop: getInfoData({ fields: ['_id', 'name', 'email'], object: newShop}),
-                    tokens
-                }
-            }
-        }
-
+        const tokens = await this._handleTokenAndKey(newShop)
         return {
-            code: 200,
-            metadata: null
+            shop: getInfoData({ fields: ['_id', 'name', 'email'], object: newShop }),
+            tokens
         }
     }
 }
