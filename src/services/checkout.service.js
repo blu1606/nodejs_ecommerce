@@ -7,6 +7,7 @@ const { releaseLock, acquireLock } = require("./redis.service")
 const { reservationInventory, rollbackInventory, restoreInventoryStock } = require("../models/repository/inventory.repo")
 const orderModel = require("../models/order.model")
 const { getOneOrderByUser, updateStatus, extractProductsFromOrder, findOrderById } = require("../models/repository/order.repo")
+const { withTransaction } = require("../utils")
 
 const VALID_TRANSITIONS = {
     pending: ['confirmed', 'cancelled'],
@@ -107,7 +108,7 @@ class CheckoutService {
     * @throws {BadRequestError} if lock fails or out of stock
     * @returns {Array<{productId, quantity}>} reserved products for rollback
     */
-    static async _reserveAllProducts(products, cartId) {
+    static async _reserveAllProducts(products, cartId, session = null) {
         const reservedProducts = []
         for (const product of products) {
             const { productId, quantity } = product;
@@ -118,7 +119,7 @@ class CheckoutService {
 
             // 2. reserve
             const isReservation = await reservationInventory({
-                productId, quantity, cartId
+                productId, quantity, cartId, session
             })
 
             if (!isReservation.modifiedCount) {
@@ -161,33 +162,29 @@ class CheckoutService {
         // get new array Products
         const products = extractProductsFromOrder(shop_order_ids_new)
         console.log('[1]:', products)
-        let reservedProducts = []
-        let newOrder
-        try {
-            // Reserve inventory for all products with distributed locking
-            reservedProducts = await CheckoutService._reserveAllProducts(products, cartId)
 
-            // make order, delete cart
-            newOrder = await orderModel.create({
+        return await withTransaction(async (session) => {
+            // 1. Reserve inventory for all products
+            await CheckoutService._reserveAllProducts(products, cartId, session)
+
+            // 2. Create order
+            const newOrder = await orderModel.create([{
                 order_userId: userId,
                 order_checkout: checkout_order,
                 user_shipping: user_address,
                 order_payment: user_payment,
                 order_products: shop_order_ids_new
-            })
+            }], { session })
+
             if (!newOrder) throw new BadRequestError(`create order failed`)
 
-        } catch (error) {
-            // 4. rollback all reservedProduct
-            await CheckoutService._rollbackReservations(reservedProducts, cartId)
-            throw error
-        }
+            // 3. Remove products in cart
+            const productIds = products.map(p => p.productId)
+            const delItem = await deleteItemsInCart({ userId, productIds, session })
+            if (!delItem.modifiedCount) throw new BadRequestError('Cart cleanup failed')
 
-        // remove product in my cart
-        const productIds = products.map(p => p.productId)
-        const delItem = await deleteItemsInCart({ userId, productIds })
-        if (!delItem.modifiedCount) console.error('Cart cleanup failed:')
-        return newOrder
+            return newOrder[0] // Mongoose .create returns an array when session is passed
+        })
     }
 
 

@@ -1,0 +1,539 @@
+{
+  "info": {
+    "_postman_id": "6312dc40-3947-4033-88ee-3ef828472f9b",
+    "name": "NodeJS Ecommerce API",
+    "description": "Comprehensive API collection for the Node.js Ecommerce system, including Access, Product, Cart, Discount, Checkout, Inventory, and Comment modules.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "40268687"
+  },
+  "item": [
+    {
+      "name": "Access",
+      "item": [
+        {
+          "name": "Signup",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response && response.metadata && response.metadata.tokens) {",
+                  "    pm.collectionVariables.set(\"accessToken\", response.metadata.tokens.accessToken);",
+                  "    pm.collectionVariables.set(\"refreshToken\", response.metadata.tokens.refreshToken);",
+                  "    pm.collectionVariables.set(\"clientId\", response.metadata.shop._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Shop Pro Max\",\n    \"email\": \"shoppromax@gmail.com\",\n    \"password\": \"abc123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/shop/signup",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shop",
+                "signup"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response && response.metadata && response.metadata.tokens) {",
+                  "    pm.collectionVariables.set(\"accessToken\", response.metadata.tokens.accessToken);",
+                  "    pm.collectionVariables.set(\"refreshToken\", response.metadata.tokens.refreshToken);",
+                  "    pm.collectionVariables.set(\"clientId\", response.metadata.shop._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"shoppromax@gmail.com\",\n    \"password\": \"abc123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/shop/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shop",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              },
+              {
+                "key": "x-client-id",
+                "value": "{{clientId}}",
+                "type": "text"
+              },
+              {
+                "key": "authorization",
+                "value": "{{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/shop/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shop",
+                "logout"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Product",
+      "item": [
+        {
+          "name": "Create Product (Electronics)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              },
+              {
+                "key": "x-client-id",
+                "value": "{{clientId}}",
+                "type": "text"
+              },
+              {
+                "key": "authorization",
+                "value": "{{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"product_name\": \"iPhone 15 Pro Max\",\n    \"product_thumb\": \"https://images.unsplash.com/photo-1696446701796-da61225697cc\",\n    \"product_description\": \"The latest iPhone with Titanium design\",\n    \"product_price\": 1299,\n    \"product_quantity\": 50,\n    \"product_type\": \"Electronics\",\n    \"product_attributes\": {\n        \"manufacturer\": \"Apple\",\n        \"model\": \"15 Pro Max\",\n        \"color\": \"Natural Titanium\"\n    }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/product",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "product"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Find All Products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/product?limit=10&page=1&sort=ctime",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "product"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "sort",
+                  "value": "ctime"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Publish Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "x-client-id",
+                "value": "{{clientId}}"
+              },
+              {
+                "key": "authorization",
+                "value": "{{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/product/publish/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "product",
+                "publish",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "ID_CU_A_BAN"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Discount",
+      "item": [
+        {
+          "name": "Create Discount Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "x-client-id",
+                "value": "{{clientId}}"
+              },
+              {
+                "key": "authorization",
+                "value": "{{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Khuyen mai 10%\",\n    \"description\": \"Giam gia 10% cho tat ca don hang\",\n    \"type\": \"percentage\",\n    \"value\": 10,\n    \"code\": \"GIAMGIA10\",\n    \"start_date\": \"2024-01-01\",\n    \"end_date\": \"2024-12-31\",\n    \"max_uses\": 100,\n    \"uses_count\": 0,\n    \"max_uses_per_user\": 1,\n    \"min_order_value\": 100,\n    \"max_value\": 50,\n    \"is_active\": true,\n    \"applies_to\": \"all\",\n    \"product_ids\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/discount",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "discount"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "Add to Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"userId\": 1001,\n    \"product\": {\n        \"productId\": \"ID_CUA_PRODUCT\",\n        \"shopId\": \"ID_CUA_SHOP\",\n        \"quantity\": 1,\n        \"name\": \"iPhone 15\",\n        \"price\": 1299\n    }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cart",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cart"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Comment",
+      "item": [
+        {
+          "name": "Get Comments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/comment?productId=ID_PRODUCT&parentCommentId=null&limit=50&offset=0",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "comment"
+              ],
+              "query": [
+                {
+                  "key": "productId",
+                  "value": "ID_PRODUCT"
+                },
+                {
+                  "key": "parentCommentId",
+                  "value": "null"
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Comment (Root)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "x-client-id",
+                "value": "{{clientId}}"
+              },
+              {
+                "key": "authorization",
+                "value": "{{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"productId\": \"ID_PRODUCT\",\n    \"userId\": 1,\n    \"content\": \"Sản phẩm rất tốt!\",\n    \"parentCommentId\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/comment",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "comment"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Comment (Child lv1)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "x-client-id",
+                "value": "{{clientId}}"
+              },
+              {
+                "key": "authorization",
+                "value": "{{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"productId\": \"ID_PRODUCT\",\n    \"userId\": 1,\n    \"content\": \"Sản phẩm rất tốt!\",\n    \"parentCommentId\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/comment",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "comment"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Comment (Child lv2)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "x-client-id",
+                "value": "{{clientId}}"
+              },
+              {
+                "key": "authorization",
+                "value": "{{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"productId\": \"ID_PRODUCT\",\n    \"userId\": 1,\n    \"content\": \"Sản phẩm rất tốt!\",\n    \"parentCommentId\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/comment",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "comment"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3052/v1/api",
+      "type": "string"
+    },
+    {
+      "key": "apiKey",
+      "value": "b8552149144724c5e783572ab6cc8c6167f9faf87b2e004e6844f85c11e6b041ce4d7191cc9593d5034053e573f2d8bb801df9faae64dae09f0f83cf37506ce7",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "clientId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

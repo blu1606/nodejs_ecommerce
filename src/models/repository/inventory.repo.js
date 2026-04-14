@@ -32,7 +32,7 @@ const addStock = async ({ shopId, productId, stock, location }) => {
     return await inventoryModel.findOneAndUpdate(query, updateSet, options)
 }
 
-const reservationInventory = async ({ productId, quantity, cartId }) => {
+const reservationInventory = async ({ productId, quantity, cartId, session = null }) => {
     const query = {
         inven_productId: convertToObjectIdMongodb(productId),
         inven_stock: { $gte: quantity }
@@ -47,12 +47,12 @@ const reservationInventory = async ({ productId, quantity, cartId }) => {
                 createOn: new Date()
             }
         }
-    }, options = { new: true }
+    }, options = { new: true, session }
 
     return await inventory.updateOne(query, updateSet, options)
 }
 
-const rollbackInventory = async ({ productId, quantity, cartId }) => {
+const rollbackInventory = async ({ productId, quantity, cartId, session = null }) => {
     const query = {
         inven_productId: convertToObjectIdMongodb(productId),
     }, updateSet = {
@@ -65,7 +65,7 @@ const rollbackInventory = async ({ productId, quantity, cartId }) => {
                 cartId
             }
         }
-    }, options = { new: true }
+    }, options = { new: true, session }
 
     return await inventory.updateOne(query, updateSet, options)
 }

@@ -1,9 +1,20 @@
 'use strict'
 
 const _ = require('lodash')
-const { Types } = require('mongoose')
+const mongoose = require('mongoose')
+const { Types } = mongoose
 
-const convertToObjectIdMongodb = id => new Types.ObjectId.createFromHexString(id)
+const convertToObjectIdMongodb = id => new Types.ObjectId(id)
+const withTransaction = async (fn) => {
+    const session = await mongoose.startSession();
+    try {
+        return await session.withTransaction(async () => {
+            return await fn(session);
+        });
+    } finally {
+        session.endSession();
+    }
+};
 const getInfoData = ({ fields = [], object = {} }) => {
     return _.pick(object, fields)
 }
@@ -18,7 +29,7 @@ const unGetSelectData = (select = []) => {
 
 const removeUndefinedObject = obj => {
     Object.keys(obj).forEach(k => {
-        if (obj[key] && typeof obj[key] === 'object') removeUndefined(obj[key]);
+        if (obj[k] && typeof obj[k] === 'object' && !Array.isArray(obj[k])) removeUndefinedObject(obj[k]);
         else if (obj[k] == null) {
             delete obj[k]
         }
@@ -50,5 +61,6 @@ module.exports = {
     unGetSelectData,
     removeUndefinedObject,
     updateNestedObjectParser,
-    convertToObjectIdMongodb
+    convertToObjectIdMongodb,
+    withTransaction
 }

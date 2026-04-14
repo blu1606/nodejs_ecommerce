@@ -1,5 +1,5 @@
 @url_dev = http://localhost:3052/v1/api
-@apiKey = a8e05b6d0026dd7d44a7d5f48a40fd671824ac4062247bfbac021e10d9981ba3fa4fa3a0c30bd79da5cdec1fcba71358b125e81b50aeabf4ab525d5fac636060
+@apiKey = b8552149144724c5e783572ab6cc8c6167f9faf87b2e004e6844f85c11e6b041ce4d7191cc9593d5034053e573f2d8bb801df9faae64dae09f0f83cf37506ce7
 
 POST {{url_dev}}/shop/login
 Content-Type: application/json

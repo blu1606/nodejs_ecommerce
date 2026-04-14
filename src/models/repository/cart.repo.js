@@ -66,7 +66,7 @@ const deleteItemInCart = async ({ userId, productId }) => {
     return await cart.updateOne(query, updateSet)
 }
 
-const deleteItemsInCart = async ({ userId, productIds = [] }) => {
+const deleteItemsInCart = async ({ userId, productIds = [], session = null }) => {
     const query = { cart_userId: userId, cart_state: 'active' },
         updateSet = {
             $pull: {
@@ -76,7 +76,7 @@ const deleteItemsInCart = async ({ userId, productIds = [] }) => {
             }
         }
 
-    return await cart.updateOne(query, updateSet)
+    return await cart.updateOne(query, updateSet, { session })
 }
 
 module.exports = {
