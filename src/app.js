@@ -13,6 +13,16 @@ app.use(express.urlencoded({
     extended: true
 }))
 
+// test pub sub redis
+// require('./tests/inventory.test')
+// const productTest = require('./tests/product.test')
+// setTimeout(() => {
+//     console.log('--- START TEST PUBLISH ---')
+
+//     productTest.purchaseProduct('product:001', 10)
+// }, 1000)
+// 
+
 // init db
 require('./dbs/init.mongodb')
 // check overload uncomment if wanna check 

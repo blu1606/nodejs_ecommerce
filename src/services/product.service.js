@@ -187,4 +187,4 @@ ProductFactory.registerProductType('Clothing', Clothing)
 ProductFactory.registerProductType('Electronics', Electronics)
 ProductFactory.registerProductType('Furniture', Furniture)
 
-module.exports = ProductFactory;
+module.exports = ProductFactory; 

@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:restart": "docker-compose restart"
   },
   "keywords": [],
   "author": "",
@@ -13,6 +16,7 @@
     "bcrypt": "^5.1.1",
     "compression": "^1.8.0",
     "crypto": "^1.0.1",
+    "discord.js": "^14.26.2",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",

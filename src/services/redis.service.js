@@ -6,6 +6,12 @@ const redisClient = redis.createClient()
 const _RETRYTIMES = 10;
 const _EXPIRETIME = 3000; // 3 seconds
 
+redisClient.on('error', (err) => console.error('Redis Client Error', err))
+redisClient.on('connect', () => console.log('Connected to Redis!'))
+
+redisClient.connect().catch(console.error)
+
+
 /**
  * Acquire a distributed lock
  * @param {string} productId 

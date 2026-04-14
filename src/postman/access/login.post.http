@@ -1,7 +1,9 @@
-@url_dev =http://localhost:3052/v1/api
+@url_dev = http://localhost:3052/v1/api
+@apiKey = a8e05b6d0026dd7d44a7d5f48a40fd671824ac4062247bfbac021e10d9981ba3fa4fa3a0c30bd79da5cdec1fcba71358b125e81b50aeabf4ab525d5fac636060
+
 POST {{url_dev}}/shop/login
 Content-Type: application/json
-x-api-key: 8e932132768802c8419c246f7f4eb05055f2997b7676628da0cbecec0104eb1475ad179e9cc31c4aaa106f9c4628c483310de37843b917381983a2f0719f6128
+x-api-key: {{apiKey}}
 
 {
     "email": "test19@gmail.com",
