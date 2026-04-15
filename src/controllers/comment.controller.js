@@ -21,6 +21,16 @@ class CommentController {
         }).send(res)
     }
 
+    deleteComment = async (req, res, next) => {
+        new SuccessResponse({
+            message: 'delete comment ',
+            metadata: await CommentService.deleteComments({
+                ...req.body,
+                userId: req.user.userId
+            })
+        }).send(res)
+    }
+
 
 }
 

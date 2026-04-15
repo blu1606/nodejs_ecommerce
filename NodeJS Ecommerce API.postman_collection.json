@@ -505,6 +505,45 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "Delete Comment",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "x-client-id",
+                "value": "{{clientId}}"
+              },
+              {
+                "key": "authorization",
+                "value": "{{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"productId\": \"ID_PRODUCT\",\n    \"commentId\": \"ID_COMMENT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/comment",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "comment"
+              ]
+            }
+          },
+          "response": []
         }
       ]
     }

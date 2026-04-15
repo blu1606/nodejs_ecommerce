@@ -75,10 +75,42 @@ const getRootComments = async ({ parentCommentId, productId, limit = 50, offset 
         .lean()
 }
 
+const findCommentById = async (commentId, session = null) => {
+    return await Comment.findById(commentId).session(session).lean()
+}
+
+const deleteCommentsWithRange = async ({ comment_productId, leftValue, rightValue, session = null }) => {
+    return await Comment.deleteMany({
+        comment_productId: comment_productId,
+        comment_left: { $gte: leftValue },
+        comment_right: { $lte: rightValue }
+    }, { session })
+}
+const updateCommentsRight = async ({ comment_productId, rightValue, width, session = null }) => {
+    return await Comment.updateMany({
+        comment_productId: comment_productId,
+        comment_right: { $gt: rightValue }
+    }, {
+        $inc: { comment_right: -width }
+    }, { session })
+}
+const updateCommentsLeft = async ({ comment_productId, rightValue, width, session = null }) => {
+    return await Comment.updateMany({
+        comment_productId: comment_productId,
+        comment_left: { $gt: rightValue }
+    }, {
+        $inc: { comment_left: -width }
+    }, { session })
+}
+
 module.exports = {
     findMaxRightValue,
     updateRightNode,
     updateLeftNode,
     getChildComments,
-    getRootComments
+    getRootComments,
+    deleteCommentsWithRange,
+    updateCommentsLeft,
+    updateCommentsRight,
+    findCommentById
 }
