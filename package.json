@@ -19,6 +19,7 @@
     "discord.js": "^14.26.2",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
+    "kafkajs": "^2.2.4",
     "lodash": "^4.17.21",
     "mongoose": "^8.13.2",
     "redis": "^5.11.0",

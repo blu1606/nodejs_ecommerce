@@ -13,6 +13,7 @@ router.use(apiKey)
 // check permission
 router.use(permission('0000'))
 router.use('/v1/api/comment', require('./comment'))
+router.use('/v1/api/notification', require('./notification'))
 router.use('/v1/api/checkout', require('./checkout'))
 router.use('/v1/api/discount', require('./discount'))
 router.use('/v1/api/inventory', require('./inventory'))

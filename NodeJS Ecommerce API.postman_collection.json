@@ -546,6 +546,55 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Notification",
+      "item": [
+        {
+          "name": "List Notifications By User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "x-client-id",
+                "value": "{{clientId}}"
+              },
+              {
+                "key": "authorization",
+                "value": "{{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notification?type=All&isRead=0&userId=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notification"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "All"
+                },
+                {
+                  "key": "isRead",
+                  "value": "0"
+                },
+                {
+                  "key": "userId",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [

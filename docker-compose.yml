@@ -20,6 +20,46 @@ services:
     networks:
       - ecommerce-network
 
+  kafka:
+    image: apache/kafka:4.0.0
+    container_name: kafka-ecommerce
+    profiles: ["kafka-off"] 
+    ports:
+      - "9092:9092"
+    environment:
+      # Các biến môi trường theo chuẩn mới của Apache Kafka 4.0
+      - KAFKA_NODE_ID=1
+      - KAFKA_PROCESS_ROLES=broker,controller
+      - KAFKA_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@localhost:9093
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
+      - KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0
+    volumes:
+      - ./data/kafka:/var/lib/kafka/data
+    networks:
+      - kafka-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-ecommerce
+    ports:
+      - "5672:5672"   
+      - "15672:15672" 
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - ./data/rabbitmq:/var/lib/rabbitmq
+    networks:
+      - ecommerce-network
+
 networks:
   ecommerce-network:
+    driver: bridge
+  kafka-network:
     driver: bridge

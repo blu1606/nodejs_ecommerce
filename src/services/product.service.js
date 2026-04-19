@@ -5,6 +5,7 @@ const { BadRequestError, ForbiddenError } = require('../core/error.response')
 const { findAllDraftsForShop, publishProductByShop, findAllPublishForShop, unPublishProductByShop, searchProductByUser, findAllProducts, findProduct, updateProductById } = require('../models/repository/product.repo')
 const { removeUndefinedObject, updateNestedObjectParser } = require("../utils")
 const { insertInventory } = require('../models/repository/inventory.repo')
+const { pushNotiToSystem } = require("./notification.service")
 // define Factory class to create product
 class ProductFactory {
     /*
@@ -95,6 +96,18 @@ class Product {
                 shopId: this.product_shop,
                 stock: this.product_quantity
             })
+            // push noti to system collection
+            // TODO: update later, query no user
+            pushNotiToSystem({
+                type: 'SHOP-001',
+                receivedId: 1,
+                senderId: this.product_shop,
+                options: {
+                    product_name: this.product_name,
+                    shop_name: this.product_shop
+                }
+            }).then(rs => console.log(rs))
+                .catch(console.error)
         }
         return newProduct; // Add this line to return the created product
     }
